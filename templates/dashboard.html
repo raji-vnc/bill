@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing Management - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; }
+    </style>
+</head>
+<body class="p-6 md:p-10">
+
+    <header class="flex justify-between items-center mb-10">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Billing Management System</h1>
+            <p class="text-gray-500 text-sm mt-1">Admin Dashboard</p>
+        </div>
+        <button onclick="logout()" class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Logout
+        </button>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+            <p class="text-gray-400 text-sm font-medium mb-6 uppercase tracking-wider">Total Bills</p>
+            <h2 class="text-4xl font-semibold text-gray-900"></h2>
+        </div>
+
+        <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+            <p class="text-gray-400 text-sm font-medium mb-6 uppercase tracking-wider">Total Revenue</p>
+            <h2 class="text-4xl font-semibold text-gray-900"></h2>
+        </div>
+
+        <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+            <p class="text-gray-400 text-sm font-medium mb-6 uppercase tracking-wider">Total Tax Collected</p>
+            <h2 class="text-4xl font-semibold text-gray-900"></h2>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 overflow-hidden">
+        <div class="flex justify-between items-center mb-8">
+            <h3 class="text-lg font-bold text-gray-800">All Bills</h3>
+            <button onclick="gotoCreatebill()" class="bg-[#0a0a0b] text-white px-5 py-2.5 rounded-lg flex items-center gap-2 text-sm font-bold hover:bg-gray-800 transition-all">
+                <span class="text-xl leading-none font-normal">+</span> Create New Bill
+            </button>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="text-gray-400 font-bold border-b border-gray-50">
+                    <tr>
+                        <th class="pb-4 pr-4">Bill Number</th>
+                        <th class="pb-4 px-4">Date</th>
+                        <th class="pb-4 px-4">Customer Name</th>
+                        <th class="pb-4 px-4">Item Name</th>
+                        <th class="pb-4 px-4">Phone</th>
+                        <th class="pb-4 px-4 text-right">Quantity</th>
+                        <th class="pb-4 px-4 text-right">Subtotal</th>
+                        <th class="pb-4 px-4 text-right">Tax</th>
+                        <th class="pb-4 px-4 text-right">GST</th>
+                        <th class="pb-4 px-4 text-right font-bold text-gray-600">Total</th>
+                        <th class="pb-4 pl-4 text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 text-gray-700 font-medium">
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="py-5 pr-4">{{ bill.id }}</td>
+                        <td class="py-5 px-4">{{ bill.date }}</td>
+                        <td class="py-5 px-4 font-semibold text-gray-900">{{ bill.customer_name }}</td>
+                        <td class="py-5 px-4">{{ bill.item_name }}</td>
+                        <td class="py-5 px-4">{{ bill.phone }}</td>
+                        <td class="py-5 px-4 text-right font-semibold">{{ bill.quantity }}</td>
+                        <td class="py-5 px-4 text-right font-semibold">{{ bill.total_price }}</td>
+                        <td class="py-5 px-4 text-right">{{ bill.tax }}</td>
+                        <td class="py-5 px-4 text-right">{{ bill.gst }}</td>
+                        <td class="py-5 px-4 text-right font-bold text-gray-900">{{ bill.grand_total }}</td>
+                        <td class="py-5 pl-4 text-center">
+                            <div class="flex justify-center gap-2">
+                                <button title="Edit Bill" class="p-2 border border-gray-200 rounded-lg hover:bg-white hover:shadow-sm text-gray-400 hover:text-blue-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                </button>
+                                <button title="Print Bill" class="p-2 border border-gray-200 rounded-lg hover:bg-white hover:shadow-sm text-gray-400 hover:text-black">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+async function loadBills() {
+  const token = localStorage.getItem("access");
+
+  if (!token) {
+    window.location.href = "/login/";
+    return;
+  }
+
+  const res = await fetch("http://127.0.0.1:8000/api/bills/", {
+    headers: {
+      "Authorization": "Bearer " + token
+    }
+  });
+
+  if (res.status === 401) {
+    window.location.href = "/login/";
+    return;
+  }
+
+  const bills = await res.json();
+  const tableBody = document.querySelector("tbody");
+  tableBody.innerHTML = "";
+
+  bills.forEach(bill => {
+
+    const subtotal = Number(bill.subtotal || bill.total || 0);
+    const tax = Number(bill.tax || 0);
+    const gst = Number(bill.gst || 0);
+    const grandTotal = subtotal + tax + gst;
+
+    const row = `
+      <tr class="hover:bg-gray-50 transition-colors">
+        <td class="py-5 pr-4">${bill.bill_no || bill.id}</td>
+        <td class="py-5 px-4">${bill.bill_date || bill.date || ""}</td>
+        <td class="py-5 px-4 font-semibold text-gray-900">${bill.customer_name || ""}</td>
+        <td class="py-5 px-4">${bill.item?.[0]?.description || "-"}</td>
+        <td class="py-5 px-4">${bill.phone || ""}</td>
+        <td class="py-5 px-4 text-right font-semibold">${bill.item?.[0]?.quantity || "-"}</td>
+        <td class="py-5 px-4 text-right font-semibold">₹${subtotal.toFixed(2)}</td>
+        <td class="py-5 px-4 text-right">₹${tax.toFixed(2)}</td>
+        <td class="py-5 px-4 text-right">₹${gst.toFixed(2)}</td>
+        <td class="py-5 px-4 text-right font-bold text-gray-900">
+          ₹${grandTotal.toFixed(2)}
+        </td>
+        <td class="py-5 pl-4 text-center">
+          <div class="flex justify-center gap-2">
+            <button onclick="viewBill(${bill.id})"
+              class="p-2 border border-gray-200 rounded-lg hover:bg-white hover:shadow-sm text-gray-400 hover:text-blue-500">
+              👁 View
+            </button>
+            <button onclick="printBill(${bill.id})"
+              class="p-2 border border-gray-200 rounded-lg hover:bg-white hover:shadow-sm text-gray-400 hover:text-black">
+              🖨️
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+
+    tableBody.innerHTML += row;
+  });
+}
+
+function viewBill(id){
+  window.location.href = `/bill-detail/${id}/`;
+}
+
+function printBill(id){
+  window.open(`/bill-print/${id}/`, "_blank");
+}
+function gotoCreatebill(){
+  window.location.href = "/create-bill/";
+}
+
+</script>
+</body>
+</html>
