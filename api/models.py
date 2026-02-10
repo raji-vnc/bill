@@ -8,6 +8,7 @@ class Product(models.Model):
         return self.name
 
 
+
 class Bill(models.Model):
     bill_no=models.CharField(max_length=100,blank=True,null=True)
     customer_name=models.CharField(max_length=200)

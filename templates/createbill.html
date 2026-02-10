@@ -47,7 +47,7 @@
 <table class="w-full border">
 <thead class="bg-gray-200">
 <tr>
-  <th class="p-2 border">Description</th>
+  <th class="p-2 border">Product</th>
   <th class="p-2 border">Quantity</th>
   <th class="p-2 border">Rate</th>
   <th class="p-2 border">Amount</th>
@@ -56,15 +56,20 @@
 </thead>
 <tbody id="itemTable">
 <tr>
-  <td class="p-1 border"><input class="desc w-full border p-1"></td>
+  <td class="p-1 border">
+    <select class="productSelect w-full border p-1" onchange="setProduct(this)">
+      <option value="">Select Product</option>
+    </select>
+  </td>
   <td class="p-1 border"><input type="number" class="qty w-full border p-1" value="0" oninput="calculate()"></td>
-  <td class="p-1 border"><input type="number" class="rate w-full border p-1" value="0" oninput="calculate()"></td>
+  <td class="p-1 border"><input type="number" class="rate w-full border p-1" value="0" readonly></td>
   <td class="p-1 border"><input class="amount w-full border p-1" value="0" readonly></td>
   <td class="p-1 border text-center">
     <button onclick="deleteRow(this)" class="bg-red-500 text-white px-2 py-1 rounded">🗑</button>
   </td>
 </tr>
 </tbody>
+
 </table>
 
 <h3 class="font-semibold mt-4 mb-2">Tax Configuration</h3>
@@ -98,15 +103,51 @@
 function addRow(){
   const row = document.createElement("tr");
   row.innerHTML = `
-  <td class="p-1 border"><input class="desc w-full border p-1"></td>
+  <td class="p-1 border">
+    <select class="productSelect w-full border p-1" onchange="setProduct(this)">
+      <option value="">Select Product</option>
+    </select>
+  </td>
   <td class="p-1 border"><input type="number" class="qty w-full border p-1" value="0" oninput="calculate()"></td>
-  <td class="p-1 border"><input type="number" class="rate w-full border p-1" value="0" oninput="calculate()"></td>
+  <td class="p-1 border"><input type="number" class="rate w-full border p-1" value="0" readonly></td>
   <td class="p-1 border"><input class="amount w-full border p-1" value="0" readonly></td>
   <td class="p-1 border text-center">
     <button onclick="deleteRow(this)" class="bg-red-500 text-white px-2 py-1 rounded">🗑</button>
   </td>
   `;
   document.getElementById("itemTable").appendChild(row);
+  loadProducts();   // <-- very important
+}
+
+async function loadProducts(){
+  const res = await fetch("/api/products/", {
+    headers: {
+      "Authorization": "Bearer " + localStorage.getItem("access")
+    }
+  });
+
+  const products = await res.json();
+
+  document.querySelectorAll(".productSelect").forEach(select=>{
+    select.innerHTML = `<option value="">Select Product</option>`;
+    products.forEach(p=>{
+      select.innerHTML += `
+        <option value="${p.id}" data-price="${p.price}">
+          ${p.name}
+        </option>
+      `;
+    });
+  });
+}
+
+// Call once on page load
+window.onload = loadProducts;
+
+function setProduct(select){
+  const row = select.closest("tr");
+  const price = select.options[select.selectedIndex].getAttribute("data-price");
+  row.querySelector(".rate").value = price;
+  calculate();
 }
 
 function deleteRow(btn){
@@ -137,7 +178,12 @@ function calculate(){
   document.getElementById("gst_amount").innerText = gstAmount;
   document.getElementById("total").innerText = total;
 }
+
+
+
+
 async function saveBill(){
+
 const billData = {
   customer_name: document.getElementById("customer_name").value,
   items: []
@@ -145,29 +191,31 @@ const billData = {
 
 document.querySelectorAll("#itemTable tr").forEach(row=>{
   billData.items.push({
-    product_id: row.querySelector(".desc").value,   // TEMP: use product id here
+    product_id: Number(row.querySelector(".productSelect").value), // ✅ REAL ID
     quantity: Number(row.querySelector(".qty").value),
     price: Number(row.querySelector(".rate").value)
   });
 });
 
+const res = await fetch("/api/create-bill/", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer " + localStorage.getItem("access")
+  },
+  body: JSON.stringify(billData)
+});
 
-  const res = await fetch("/api/create-bill/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + localStorage.getItem("access")
-    },
-    body: JSON.stringify(billData)
-  });
+const data = await res.json();
 
-  if(res.ok){
-    alert("Bill saved successfully!");
-    window.location.href = "/dashboard/";
-  } else {
-    alert("Error saving bill");
-  }
+if(res.ok){
+  alert("Bill saved successfully!");
+  window.location.href = "/dashboard/";
+} else {
+  alert("Error: " + JSON.stringify(data));
 }
+}
+
 
 </script>
 

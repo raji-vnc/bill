@@ -4,6 +4,7 @@ from django.shortcuts import redirect, render
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
 from .models import Bill, BillItem, Product
 from .serializers import BillSerializer, BillItemSerializer, ProductSerializer
 from django.contrib.auth.decorators import login_required
@@ -51,53 +52,76 @@ def add_product(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def save_bill(request):
+
     customer_name = request.data.get("customer_name")
-    items = request.data.get("items")
+    items_data = request.data.get("items")
 
-    if not customer_name or not items:
-        return Response(
-            {"error": "customer_name and items required"},
-            status=400
-        )
+    if not customer_name:
+        return Response({"error": "customer_name is required"}, status=400)
 
+    if not items_data or not isinstance(items_data, list):
+        return Response({"error": "items must be a list"}, status=400)
+
+    # STEP 1 — Create Bill
     bill = Bill.objects.create(
         customer_name=customer_name,
+        created_by=request.user.username,
         total=0,
         total_price=0
     )
 
-    total = 0
+    total_amount = 0
 
-    for item in items:
-        product = get_object_or_404(Product, id=item["product_id"])
+   
+    for item in items_data:
+        product_id = item.get("product_id")  
+        quantity = item.get("quantity")
+        price = item.get("price")
 
-        BillItem.objects.create(
-            bill=bill,
-            product=product,
-            quantity=item["quantity"],
-            price=item["price"]
-        )
+        if product_id is None or quantity is None or price is None:
+            bill.delete()
+            return Response({"error": f"Invalid item: {item}"}, status=400)
 
-        total += item["quantity"] * item["price"]
+        try:
+            product = Product.objects.get(id=product_id)  
 
-    bill.total = total
-    bill.total_price = total
+            BillItem.objects.create(
+                bill=bill,
+                product=product,
+                quantity=quantity,
+                price=price
+            )
+
+            total_amount += quantity * price
+
+        except Product.DoesNotExist:
+            bill.delete()
+            return Response(
+                {"error": f"Product '{product_id}' does not exist"},
+                status=400
+            )
+
+    # STEP 3 — Update totals
+    bill.total = total_amount
+    bill.total_price = total_amount
     bill.save()
 
-    return Response({"message": "Bill saved", "id": bill.id})
-    
+    serializer = BillSerializer(bill)
+    return Response(serializer.data, status=201)
+
+ 
 @api_view(["GET"])
-def get_single_bill(request, id):
+def bill_detail(request, id):
     bill = get_object_or_404(Bill, id=id)
     serializer = BillSerializer(bill)
     return Response(serializer.data)
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def product_list(request):
-    products=Product.objects.all()
-    serializer=ProductSerializer(products,many=True)
-    return Response(serializer.data)
+    products = Product.objects.all()
+    data = [{"id": p.id, "name": p.name, "price": p.price} for p in products]
+    return Response(data)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
