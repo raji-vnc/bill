@@ -290,7 +290,8 @@ def admin_logout(request):
 
 @login_required
 def dashboard(request):
-    return render(request, 'dashboard.html')
+    bills=Bill.objects.all().order_by('-id')[:10]
+    return render(request, 'dashboard.html', {'bills': bills})
 
 # End of src/bill/api/views.py
 
