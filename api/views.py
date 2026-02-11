@@ -150,9 +150,14 @@ def create_bill(request):
     # ---- STEP 1: Create empty bill first ----
     bill = Bill.objects.create(
         customer_name=customer_name,
+        phone=request.data.get("phone"),  # ✅ ADD PHONE
         created_by=created_by,
+        bill_no=f"BILL-{Bill.objects.count() + 1}",
         total=0,
-        total_price=0
+        total_price=0,
+        tax=0,   # will be updated later
+    gst=0,
+         
     )
 
     total_amount = 0
@@ -188,16 +193,21 @@ def create_bill(request):
                 {"error": f"Product with id {product_id} does not exist"},
                 status=400
             )
+        tax_rate = float(request.data.get("tax", 0))      # 0.5
+        gst_rate = float(request.data.get("gst", 0))      # 0.5
 
     # ---- STEP 3: Update bill totals (MOST IMPORTANT) ----
-    tax_amount = total_amount * 0.05   # 5% tax
-    gst_amount = total_amount * 0.18   # 18% GST
+    tax_amount = total_amount * (tax_rate / 100)
+    gst_amount = total_amount * (gst_rate / 100)
 
     bill.total = total_amount
     bill.total_price = total_amount
-    bill.tax = tax_amount        # ✅ SAVE TAX
-    bill.gst = gst_amount        # ✅ SAVE GST
+
+    bill.tax = tax_amount      # ✅ SAVE AMOUNT, NOT RATE
+    bill.gst = gst_amount      # ✅ SAVE AMOUNT, NOT RATE
+
     bill.save()
+
   # 👉 WITHOUT THIS, totals WILL REMAIN 0
 
     serializer = BillSerializer(bill)

@@ -186,8 +186,12 @@ async function saveBill(){
 
 const billData = {
   customer_name: document.getElementById("customer_name").value,
-    phone: document.getElementById("phone").value,        // ✅ IMPORTANT
+    phone: document.getElementById("phone").value, 
+    
+  tax: Number(document.getElementById("tax").value),   // ✅ MUST
+  gst: Number(document.getElementById("gst").value),          // ✅ IMPORTANT
  items: []
+ 
 };
 
 document.querySelectorAll("#itemTable tr").forEach(row=>{

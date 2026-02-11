@@ -94,10 +94,10 @@ bills.forEach(bill => {
 
   // Correct subtotal
   const subtotal = Number(bill.total_price || bill.total || 0);
+const tax = Number(bill.tax || 0);
+const gst = Number(bill.gst || 0);
+const grandTotal = subtotal + tax + gst;
 
-  const tax = Number(bill.tax || 0);
-  const gst = Number(bill.gst || 0);
-  const grandTotal = subtotal + tax + gst;
 
   const row = `
   <tr>
