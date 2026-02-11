@@ -77,19 +77,30 @@ tableBody.innerHTML = "";
 
 bills.forEach(bill => {
 
-const subtotal = Number(bill.total || bill.total_price || 0);
+const subtotal = Number(bill.total_price || bill.total || 0);
 const tax = Number(bill.tax || 0);
 const gst = Number(bill.gst || 0);
 const grandTotal = subtotal + tax + gst;
 
 const row = `
 <tr class="hover:bg-gray-50">
-<td class="py-4">${bill.bill_no || bill.id}</td>
+<td>${bill.bill_no || "BILL-" + bill.id}</td>
 <td>${bill.date || ""}</td>
 <td>${bill.customer_name || ""}</td>
 <td>${bill.item_name || "-"}</td>
 <td>${bill.phone || ""}</td>
-<td class="text-right">${bill.quantity || 0}</td>
+<td>${bill.quantity || 0}</td>
+<td>
+  ${bill.items.length > 0 
+      ? bill.items[0].product.name 
+      : "-"}
+</td>
+
+<td>
+  ${bill.items.length > 0 
+      ? bill.items[0].quantity 
+      : 0}
+</td>
 <td class="text-right">₹${subtotal}</td>
 <td class="text-right">₹${tax}</td>
 <td class="text-right">₹${gst}</td>
