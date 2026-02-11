@@ -66,6 +66,7 @@ def save_bill(request):
     bill = Bill.objects.create(
     customer_name=request.data['customer_name'],
     bill_no=f"BILL-{Bill.objects.count()+1}",
+    phone=request.data.get("phone"),   # ✅ ADD THIS
     total=request.data['total'],
     total_price=request.data['total_price'],
     tax=request.data['tax'],
@@ -189,9 +190,15 @@ def create_bill(request):
             )
 
     # ---- STEP 3: Update bill totals (MOST IMPORTANT) ----
+    tax_amount = total_amount * 0.05   # 5% tax
+    gst_amount = total_amount * 0.18   # 18% GST
+
     bill.total = total_amount
     bill.total_price = total_amount
-    bill.save()   # 👉 WITHOUT THIS, totals WILL REMAIN 0
+    bill.tax = tax_amount        # ✅ SAVE TAX
+    bill.gst = gst_amount        # ✅ SAVE GST
+    bill.save()
+  # 👉 WITHOUT THIS, totals WILL REMAIN 0
 
     serializer = BillSerializer(bill)
     return Response(serializer.data, status=201)

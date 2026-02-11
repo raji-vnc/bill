@@ -186,7 +186,8 @@ async function saveBill(){
 
 const billData = {
   customer_name: document.getElementById("customer_name").value,
-  items: []
+    phone: document.getElementById("phone").value,        // ✅ IMPORTANT
+ items: []
 };
 
 document.querySelectorAll("#itemTable tr").forEach(row=>{
