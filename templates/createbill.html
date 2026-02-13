@@ -120,7 +120,7 @@ function addRow(){
 }
 
 async function loadProducts(){
-  const res = await fetch("/api/products/", {
+  const res = await fetch("/api/add-item/", {
     headers: {
       "Authorization": "Bearer " + localStorage.getItem("access")
     }

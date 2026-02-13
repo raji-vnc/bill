@@ -20,6 +20,7 @@ urlpatterns=[
     path('api/list-bill/<int:id>/', views.list_bill, name='list_bill'),
     path('api/bill-detail/<int:id>/', views.bill_detail, name='bill_detail'),
     path('api/view-bills/<int:id>/', views.view_bill, name='view_bill'),
+    path("api/add-item/<int:bill_id>/", views.add_item_to_bill, name='add_item_to_bill'),
 
 
 

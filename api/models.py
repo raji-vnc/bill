@@ -22,6 +22,22 @@ class Bill(models.Model):
     date=models.DateTimeField(auto_now_add=True)   
     created_by=models.CharField(max_length=200)
 
+    def update_total(self):
+        items = self.items.all()
+        total = sum(item.quantity * item.price for item in items)
+        tax=5
+        gst=18
+        tax=total*tax/100
+        gst=total*gst/100
+        self.total=total
+        self.total_price=total
+        self.tax=tax
+        self.gst=gst
+
+        self.save()
+
+    
+
     @property
     def grand_total(self):
         return self.total + self.tax + self.gst
@@ -36,3 +52,10 @@ class BillItem(models.Model):
  
     def __str__(self):
         return f"{self.quantity} x {self.product.name} for Bill {self.bill.id}"
+    
+class BillingSetting(models.Model):
+    tax_rate=models.FloatField(default=0.0)
+    gst_rate=models.FloatField(default=0.0)
+
+    def __str__(self):
+        return f"Billing Setting - Tax: {self.tax_rate}%, GST: {self.gst_rate}%"

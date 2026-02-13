@@ -135,6 +135,39 @@ def product_list(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+def add_item_to_bill(request, bill_id):
+
+    try:
+        bill = Bill.objects.get(id=bill_id)
+    except Bill.DoesNotExist:
+        return Response({"error": "Bill not found"}, status=404)
+
+    product_id = request.data.get("product_id")
+    quantity = request.data.get("quantity")
+
+    if not product_id or not quantity:
+        return Response({"error": "product_id and quantity required"}, status=400)
+
+    try:
+        product = Product.objects.get(id=product_id)
+    except Product.DoesNotExist:
+        return Response({"error": "Product not found"}, status=404)
+
+    # use product price automatically
+    BillItem.objects.create(
+        bill=bill,
+        product=product,
+        quantity=quantity,
+        price=product.price
+    )
+
+    return Response({
+        "message": "Item added successfully",
+        "bill_total": bill.total_price
+    })
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def create_bill(request):
 
     customer_name = request.data.get("customer_name")
@@ -371,4 +404,5 @@ def view_bills_page(request,id):
 
 
     return render(request, 'viewbills.html', context)
+
 
