@@ -216,8 +216,20 @@ def create_bill(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_bills(request):
-    bills = Bill.objects.all()
+    try:
+        bills = Bill.objects.filter(created_by=request.user.username)
+    except Bill.DoesNotExist:
+        return Response({"error": "No bills found for this user"}, status=404)
     serializer = BillSerializer(bills, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_bill(request, id):
+    bills=Bill.objects.filter(id=id, created_by=request.user.username)
+    if not bills.exists():
+        return Response({"error": "Bill not found"}, status=404)
+    serializer=BillSerializer(bills.first())
     return Response(serializer.data)
 
 @api_view(['PUT'])
@@ -330,6 +342,7 @@ def login_page(request):
 def create_bill_page(request):
     return render(request, 'createbill.html')
 
-
+def view_bills_page(request):
+    return render(request, 'viewbills.html')
 
 

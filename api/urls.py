@@ -17,6 +17,7 @@ urlpatterns=[
     path('api/bill-pdf/<int:bill_id>/', views.bill_pdf, name='bill_pdf'),
     path('api/add-product/', views.add_product, name='add_product'),
     path('api/bills/', views.get_bills, name='get_bills'),
+    path('api/list-bill/<int:id>/', views.list_bill, name='list_bill'),
     path('api/bill-detail/<int:id>/', views.bill_detail, name='bill_detail'),
 
 
