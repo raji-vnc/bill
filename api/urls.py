@@ -19,10 +19,16 @@ urlpatterns=[
     path('api/bills/', views.get_bills, name='get_bills'),
     path('api/list-bill/<int:id>/', views.list_bill, name='list_bill'),
     path('api/bill-detail/<int:id>/', views.bill_detail, name='bill_detail'),
+    path('api/view-bills/<int:id>/', views.view_bill, name='view_bill'),
+
+
 
 
     path('login_page/', views.login_page, name='login_page'),
     path('create-bill/', views.create_bill_page, name='create_bill_page'),
+    path('view-bills/', views.view_bills_page, name='view_bills_page'),
+    path('view-bills/<int:id>/', views.view_bills_page, name='view_bill'),
+
     
     
 ]

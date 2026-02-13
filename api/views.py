@@ -326,6 +326,17 @@ def admin_logout(request):
     except Exception as e:
         return Response({"error": str(e)}, status=400)
 
+@api_view(['GET'])
+def view_bill(request, id):
+
+    try:
+        bill = Bill.objects.get(id=id)
+    except Bill.DoesNotExist:
+        return Response({"error": "Bill not found"}, status=404)
+
+    serializer = BillSerializer(bill)
+    return Response(serializer.data)
+
 @login_required
 def dashboard(request):
     bills=Bill.objects.all().order_by('-id')[:10]
@@ -342,7 +353,22 @@ def login_page(request):
 def create_bill_page(request):
     return render(request, 'createbill.html')
 
-def view_bills_page(request):
-    return render(request, 'viewbills.html')
+def view_bills_page(request,id):
+    bill=get_object_or_404(Bill, id=id)
+    subtotal=sum(item.quantity * item.price for item in bill.items.all())
+    tax = subtotal * 0.05
+    gst = subtotal * 0.18
+    grand_total = subtotal + tax + gst
 
+    context = {
+        "bill": bill,
+        "subtotal": round(subtotal, 2),
+        "tax": round(tax, 2),
+        "gst": round(gst, 2),
+        "grand_total": round(grand_total, 2),
+    }
+
+
+
+    return render(request, 'viewbills.html', context)
 
