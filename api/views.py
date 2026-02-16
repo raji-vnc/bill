@@ -405,4 +405,37 @@ def view_bills_page(request,id):
 
     return render(request, 'viewbills.html', context)
 
+def bill_pdf(request, bill_id):
+    try:
+        bill = Bill.objects.get(id=bill_id)
+        items = BillItem.objects.filter(bill=bill)
+    except Bill.DoesNotExist:
+        return HttpResponse("Bill not found", status=404)
 
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="bill_{bill_id}.pdf"'
+
+    p = canvas.Canvas(response, pagesize=A4)
+
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(200, 800, "BILL INVOICE")
+
+    p.setFont("Helvetica", 12)
+    p.drawString(50, 760, f"Bill ID: {bill.id}")
+    p.drawString(50, 740, f"Customer: {bill.customer_name}")
+    p.drawString(50, 720, f"Date: {bill.date}")
+    p.drawString(50, 700, "-------------------------------------------")
+
+    y = 680
+    for item in items:
+        line = f"{item.product.name} x {item.quantity} = {item.quantity * item.price}"
+        p.drawString(50, y, line)
+        y -= 20
+
+    p.drawString(50, y-20, "-------------------------------------------")
+    p.drawString(50, y-40, f"Total: {bill.total}")
+
+    p.showPage()
+    p.save()
+    return response
+  

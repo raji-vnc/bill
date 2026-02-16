@@ -29,6 +29,7 @@ urlpatterns=[
     path('create-bill/', views.create_bill_page, name='create_bill_page'),
     path('view-bills/', views.view_bills_page, name='view_bills_page'),
     path('view-bills/<int:id>/', views.view_bills_page, name='view_bill'),
+    path('bill_pdf/<int:bill_id>/', views.bill_pdf, name='bill_pdf'),
 
     
     
